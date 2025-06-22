@@ -1,0 +1,234 @@
+/* Estilos generales */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+body {
+    background-image: url("../imagenes/fondo.png");
+    background-repeat: repeat;
+    background-size: 50px 50px;
+    background-color: #ffffff !important;
+}
+
+/* Estilos para el div #root */
+#root {
+    min-height: 100vh;
+    height: 100%;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Estilos para la aplicación */
+.App {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Establece que el contenedor de productos ocupe el alto completo de la ventana */
+.product-container {
+    min-height: calc(100vh - 300px);
+}
+
+/* Evitar que el footer tape el contenido */
+.content-wrapper {
+    padding-bottom: 50px;
+}
+
+/* Contenedor principal */
+.container-fluid {
+    max-width: 90%;
+    margin: 0 auto;
+    flex: 1;
+    background-color: transparent;
+}
+
+/* Main content */
+main {
+    flex: 1;
+    min-height: calc(100vh - 200px);
+    background-color: transparent;
+}
+
+/* Contenedor principal con fondo blanco */
+main.container-fluid {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Fila principal con fondo blanco */
+main.container-fluid .row {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: none;
+    padding: 20px;
+    margin: 0;
+}
+
+.card-text.description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Cabecera */
+header {
+    margin-bottom: 0;
+}
+h1 {
+    font-size: 3rem; 
+}
+
+/* Menú de navegación */
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+/* Estilos para dropZone (drag & drop) */
+#dropZone {
+    background-color: #f8f9fa;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* Cuando se esté arrastrando un archivo sobre el dropZone, se aplica esta clase para poner el borde en verde */
+#dropZone.drop-active {
+    border: 2px solid green !important;
+}
+
+/* Estilo para mensajes emergentes */
+.message {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 9999;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border-radius: 5px;
+}
+
+/* Tamaño fijo para imágenes de tarjetas de productos */
+.card-img-top {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Espacio entre el texto ("Precio", "Valoración") y las barras */
+#filtroAjustes .mb-3 label {
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+/* ===================== Estilos para la barra dual ===================== */
+/* Contenedor para el slider dual */
+.dual-slider-container {
+    position: relative;
+    height: 40px;  
+    margin-top: 10px; 
+}
+
+/* Estilo por defecto para la pista dual, aplicada a ambos inputs */
+input[type="range"].dual-range {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 100%;
+    height: 10px;  
+    background: #000 !important; 
+    border-radius: 5px;
+    outline: none;
+    pointer-events: none;
+}
+
+/* Override para la pista de los mínimos => debe ser transparente */
+#precioMin.dual-range,
+#valoracionMin.dual-range {
+    background: transparent !important;
+    border: none !important;
+    z-index: 3;
+}
+
+/* Asegurar que en WebKit la pista de los mínimos sea transparente */
+#precioMin.dual-range::-webkit-slider-runnable-track,
+#valoracionMin.dual-range::-webkit-slider-runnable-track {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Y para Firefox la pista de los mínimos también */
+#precioMin.dual-range::-moz-range-track,
+#valoracionMin.dual-range::-moz-range-track {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Thumb para navegadores WebKit en dual-range (aplica para ambos, mínimos y máximos) */
+input[type="range"].dual-range::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 20px;
+    height: 20px;
+    background: #000 !important;
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: all;
+    position: relative;
+    z-index: 4;
+    margin-top: -5px;
+}
+
+/* Thumb para Firefox en dual-range */
+input[type="range"].dual-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #000 !important;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    pointer-events: all;
+    position: relative;
+    z-index: 4;
+}
+/* ===================== Fin de los estilos para la barra dual ===================== */
+
+/* Estilos para el contador de productos en paginación */
+.pagination-container {
+    background-color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.pagination-container .pagination {
+    margin-bottom: 10px;
+}
+
+.pagination-container .product-counter {
+    background-color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    font-weight: 500;
+    color: #495057;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
