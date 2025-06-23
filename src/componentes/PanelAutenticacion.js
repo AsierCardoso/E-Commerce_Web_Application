@@ -3,7 +3,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 
 const PanelAutenticacion = ({ offline }) => {
-  const { currentUser, login, logout } = useContext(AuthContext);
+  const { currentUser, login, logout, visitas } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,11 +49,11 @@ const PanelAutenticacion = ({ offline }) => {
                   </span>
                 </div>
               )}
-              {currentUser.visitas !== undefined && (
+              {visitas !== undefined && (
                 <div className="col-6">
                   <strong>Visitas:</strong>
                   <br />
-                  <span className="badge bg-success">{currentUser.visitas}</span>
+                  <span className="badge bg-success">{visitas}</span>
                 </div>
               )}
             </div>
