@@ -66,9 +66,7 @@ function AppContent() {
   useEffect(() => {
     const cargarProductos = async () => {
       try {
-        const response = await fetch('https://9bf2-2a0c-5a86-540a-bc00-89b2-5049-c118-5ce4.ngrok-free.app/api/productos', {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
-        });
+        const response = await fetch('http://localhost:4000/api/productos');
         if (response.ok) {
           const data = await response.json();
           setProductos(data);
@@ -171,11 +169,10 @@ function AppContent() {
 
   const handleAddProduct = async (newProduct) => {
     try {
-      const response = await fetch('https://9bf2-2a0c-5a86-540a-bc00-89b2-5049-c118-5ce4.ngrok-free.app/api/productos', {
+      const response = await fetch('http://localhost:4000/api/productos', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(newProduct)
       });
@@ -192,11 +189,10 @@ function AppContent() {
 
   const handleUpdateProduct = async (updatedProduct) => {
     try {
-      const response = await fetch(`https://9bf2-2a0c-5a86-540a-bc00-89b2-5049-c118-5ce4.ngrok-free.app/api/productos/${updatedProduct._id}`, {
+      const response = await fetch(`http://localhost:4000/api/productos/${updatedProduct._id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(updatedProduct)
       });
@@ -216,9 +212,8 @@ function AppContent() {
 
   const handleDeleteProduct = async (productId) => {
     try {
-      const response = await fetch(`https://9bf2-2a0c-5a86-540a-bc00-89b2-5049-c118-5ce4.ngrok-free.app/api/productos/${productId}`, {
-        method: 'DELETE',
-        headers: { 'ngrok-skip-browser-warning': 'true' }
+      const response = await fetch(`http://localhost:4000/api/productos/${productId}`, {
+        method: 'DELETE'
       });
 
       if (response.ok) {

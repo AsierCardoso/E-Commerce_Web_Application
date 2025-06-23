@@ -8,8 +8,8 @@ const fs = require('fs');
 // Configurar multer para subida de imágenes
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // Obtener el tipo del producto desde el body de la petición
-    const tipo = req.body.tipo || 'otros';
+    // Obtener el tipo del producto desde la query string de la URL
+    const tipo = req.query.tipo || 'otros';
     const uploadDir = path.join(__dirname, '../../public/imagenes/productos', tipo);
     
     // Crear directorio si no existe
@@ -70,8 +70,8 @@ router.post('/upload-image', upload.single('imagen'), async (req, res) => {
       return res.status(400).json({ error: 'No se ha subido ningún archivo' });
     }
     
-    // Obtener el tipo del producto desde el body de la petición
-    const tipo = req.body.tipo || 'otros';
+    // Obtener el tipo del producto desde la query string
+    const tipo = req.query.tipo || 'otros';
     
     // Devolver la ruta de la imagen subida incluyendo el tipo
     const imagePath = `/imagenes/productos/${tipo}/${req.file.filename}`;

@@ -49,10 +49,9 @@ const FormularioNuevosProductos = ({ onAddProduct, offline }) => {
   const uploadImage = async (file) => {
     const formData = new FormData();
     formData.append('imagen', file);
-    formData.append('tipo', tipo);
 
     try {
-      const response = await fetch('http://localhost:4000/api/productos/upload', {
+      const response = await fetch(`http://localhost:4000/api/productos/upload-image?tipo=${tipo}`, {
         method: 'POST',
         body: formData
       });
@@ -76,10 +75,18 @@ const FormularioNuevosProductos = ({ onAddProduct, offline }) => {
     setIsSubmitting(true);
     setMensaje(null);
 
+    // Validar que se ha seleccionado un tipo ANTES de intentar subir la imagen
+    if (!tipo) {
+        setMensaje({ text: "Debes seleccionar un tipo de producto antes de continuar.", type: "error" });
+        setIsSubmitting(false);
+        return;
+    }
+
     try {
       // Validar campos obligatorios
-      if (!tipo || !nombre || !precio || !extra) {
+      if (!nombre || !precio || !extra) {
         setMensaje({ text: "Completa todos los campos obligatorios.", type: "error" });
+        setIsSubmitting(false); // Liberar el botón
         return;
       }
 

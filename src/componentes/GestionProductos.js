@@ -83,9 +83,8 @@ const GestionProductos = ({ offline, onUpdateProduct, onDeleteProduct, productos
   const uploadImage = async (file, tipo) => {
     const formData = new FormData();
     formData.append('imagen', file);
-    formData.append('tipo', tipo);
     try {
-      const response = await fetch('http://localhost:4000/api/productos/upload', {
+      const response = await fetch(`http://localhost:4000/api/productos/upload-image?tipo=${tipo}`, {
         method: 'POST',
         body: formData
       });
