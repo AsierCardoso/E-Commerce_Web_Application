@@ -51,7 +51,7 @@ const FormularioNuevosProductos = ({ onAddProduct, offline }) => {
     formData.append('imagen', file);
 
     try {
-      const response = await fetch(`http://localhost:4000/api/productos/upload-image?tipo=${tipo}`, {
+      const response = await fetch(`http://34.69.136.113/api/productos/upload-image?tipo=${tipo}`, {
         method: 'POST',
         body: formData
       });

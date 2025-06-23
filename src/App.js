@@ -66,7 +66,7 @@ function AppContent() {
   useEffect(() => {
     const cargarProductos = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/productos');
+        const response = await fetch('http://34.69.136.113/api/productos');
         if (response.ok) {
           const data = await response.json();
           setProductos(data);
@@ -169,7 +169,7 @@ function AppContent() {
 
   const handleAddProduct = async (newProduct) => {
     try {
-      const response = await fetch('http://localhost:4000/api/productos', {
+      const response = await fetch('http://34.69.136.113/api/productos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -189,7 +189,7 @@ function AppContent() {
 
   const handleUpdateProduct = async (updatedProduct) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/productos/${updatedProduct._id}`, {
+      const response = await fetch(`http://34.69.136.113/api/productos/${updatedProduct._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -212,7 +212,7 @@ function AppContent() {
 
   const handleDeleteProduct = async (productId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/productos/${productId}`, {
+      const response = await fetch(`http://34.69.136.113/api/productos/${productId}`, {
         method: 'DELETE'
       });
 
