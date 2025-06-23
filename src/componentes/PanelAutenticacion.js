@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 
 const PanelAutenticacion = ({ offline }) => {
-  const { user, login, logout, visitas, checkAuthStatus } = useAuth();
+  const { currentUser, login, logout } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,9 +21,6 @@ const PanelAutenticacion = ({ offline }) => {
     if (result.success) {
       setEmail('');
       setPassword('');
-      setTimeout(() => {
-        checkAuthStatus();
-      }, 200);
     } else {
       setError(result.error);
     }
@@ -34,16 +32,15 @@ const PanelAutenticacion = ({ offline }) => {
     await logout();
   };
 
-  if (user) {
-    // Panel de usuario autenticado
+  if (currentUser) {
     return (
       <aside className="col-md-4 p-3 border-end rounded bg-white">
-        <h3 className="mb-3">Bienvenide, {user.nombre}</h3>
+        <h3 className="mb-3">Bienvenide, {currentUser.nombre}</h3>
         
         <div className="card mb-3">
           <div className="card-body">
             <div className="row">
-              {user.rol === 'admin' && (
+              {currentUser.rol === 'admin' && (
                 <div className="col-6">
                   <strong>Rol:</strong>
                   <br />
@@ -52,11 +49,13 @@ const PanelAutenticacion = ({ offline }) => {
                   </span>
                 </div>
               )}
-              <div className="col-6">
-                <strong>Visitas:</strong>
-                <br />
-                <span className="badge bg-success">{visitas}</span>
-              </div>
+              {currentUser.visitas !== undefined && (
+                <div className="col-6">
+                  <strong>Visitas:</strong>
+                  <br />
+                  <span className="badge bg-success">{currentUser.visitas}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -72,69 +71,43 @@ const PanelAutenticacion = ({ offline }) => {
     );
   }
 
-  // Panel de autenticación
   return (
-    <aside className="col-md-4 p-3 border-end rounded bg-white">
-      <h3 className="mb-3">Iniciar Sesión</h3>
-      
-      <form onSubmit={handleLogin} className="rounded p-3 border">
+    <div className="authentication-panel p-3 bg-light rounded shadow-sm">
+      <h5 className="mb-3 text-center">Iniciar Sesión</h5>
+      <form onSubmit={handleLogin}>
         <div className="mb-3">
-          <label htmlFor="email" className="form-label">Email</label>
-          <input 
-            type="email" 
-            className="form-control rounded" 
-            id="email" 
-            placeholder="tu@email.com" 
+          <label htmlFor="email-login" className="form-label">Email</label>
+          <input
+            type="email"
+            id="email-login"
+            className="form-control"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={offline || loading}
           />
         </div>
-        
         <div className="mb-3">
-          <label htmlFor="password" className="form-label">Contraseña</label>
-          <input 
-            type="password" 
-            className="form-control rounded" 
-            id="password" 
-            placeholder="Contraseña" 
+          <label htmlFor="password-login" className="form-label">Contraseña</label>
+          <input
+            type="password"
+            id="password-login"
+            className="form-control"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={offline || loading}
           />
         </div>
-        
-        <button 
-          type="submit" 
-          className="btn btn-primary rounded w-100" 
-          disabled={offline || loading}
-        >
-          {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+        {error && <p className="text-danger small">{error}</p>}
+        <button type="submit" className="btn btn-primary w-100" disabled={offline || loading}>
+          {loading ? 'Iniciando...' : 'Entrar'}
         </button>
       </form>
-
-      {error && (
-        <div className="mt-3 alert alert-danger">
-          {error}
-        </div>
-      )}
-
-      {offline && (
-        <div className="mt-3 alert alert-warning">
-          <strong>Modo offline:</strong> No puedes iniciar sesión sin conexión.
-        </div>
-      )}
-
-      <div className="mt-3 p-3 bg-light rounded">
-        <small className="text-muted">
-          <strong>Usuarios de prueba:</strong><br />
-          • admin@tienda.com (Administrador)<br />
-          • usuario@tienda.com (Usuario)
-        </small>
+      <div className="text-center mt-3">
+        <Link to="/registro">¿No tienes cuenta? Regístrate</Link>
       </div>
-    </aside>
+    </div>
   );
 };
 

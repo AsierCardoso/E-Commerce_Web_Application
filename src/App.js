@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import './css/styles.css';
 import Cabecera from './componentes/Cabecera';
 import MenuNavegacion from './componentes/MenuNavegacion';
@@ -13,14 +13,17 @@ import Carrito from './componentes/Carrito';
 import FiltrosAjustes from './componentes/FiltrosAjustes';
 import PanelAutenticacion from './componentes/PanelAutenticacion';
 import MiCuenta from './componentes/MiCuenta';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider, AuthContext } from './contexts/AuthContext';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
+import LoginForm from './componentes/LoginForm';
+import RegisterForm from './componentes/RegisterForm';
 
 /*
   Componente: AppContent
   Descripción: Contenido principal de la aplicación con autenticación
 */
 function AppContent() {
-  const { user } = useAuth();
+  const { currentUser } = useContext(AuthContext);
   
   // Estado online/offline: Define si la aplicación está en modo offline según la conexión del navegador.
   const [offline, setOffline] = useState(!navigator.onLine);
@@ -32,7 +35,7 @@ function AppContent() {
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [mostrarAjustes, setMostrarAjustes] = useState(false);
-  const [seccionActual, setSeccionActual] = useState('productos'); // 'productos', 'mi-cuenta', 'añadir-producto'
+  const [seccionActual, setSeccionActual] = useState('escaparate');
 
   // Calcular el precio máximo de los productos, de 1000 si no hay productos.
   const computedMaxPrice = productos.length > 0 ? Math.max(...productos.map(p => p.precio)) : 1000;
@@ -180,7 +183,7 @@ function AppContent() {
       if (response.ok) {
         const productoGuardado = await response.json();
         setProductos(prev => [...prev, productoGuardado]);
-        setSeccionActual('productos'); // Volver a la vista de productos
+        setSeccionActual('escaparate'); // Volver a la vista de escaparate
       }
     } catch (error) {
       console.error('Error añadiendo producto:', error);
@@ -267,22 +270,20 @@ function AppContent() {
   };
 
   // Renderizar contenido según la sección actual
-  const renderContenidoPrincipal = () => {
+  const renderizarSeccion = () => {
     switch (seccionActual) {
+      case 'escaparate':
+        return <EscaparateProductos productos={productosFiltrados} />;
       case 'mi-cuenta':
         return <MiCuenta offline={offline} />;
       case 'añadir-producto':
-        return user?.rol === 'admin' ? (
+        return currentUser?.rol === 'admin' ? (
           <FormularioNuevosProductos onAddProduct={handleAddProduct} offline={offline} />
         ) : (
-          <div className="col-md-8 p-3">
-            <div className="alert alert-warning">
-              Solo los administradores pueden añadir productos.
-            </div>
-          </div>
+          <p>Acceso denegado. Debes ser administrador.</p>
         );
       case 'editar-productos':
-        return user?.rol === 'admin' ? (
+        return currentUser?.rol === 'admin' ? (
           <GestionProductos 
             offline={offline} 
             onUpdateProduct={handleUpdateProduct}
@@ -290,76 +291,33 @@ function AppContent() {
             productos={productos}
           />
         ) : (
-          <div className="col-md-8 p-3">
-            <div className="alert alert-warning">
-              Solo los administradores pueden gestionar productos.
-            </div>
-          </div>
+          <p>Acceso denegado. Debes ser administrador.</p>
         );
       default:
-        return (
-          <>
-            <div className="col-md-8 p-3">
-              <BuscadorProductos 
-                query={query} 
-                setQuery={setQuery} 
-                toggleAjustes={toggleAjustes}
-                offline={offline}
-              />
-              {mostrarAjustes && (
-                <FiltrosAjustes
-                  precioMin={precioMin}
-                  precioMax={precioMax}
-                  valoracionMin={valoracionMin}
-                  valoracionMax={valoracionMax}
-                  onPrecioMinChange={handlePrecioMinChange}
-                  onPrecioMaxChange={handlePrecioMaxChange}
-                  onValoracionMinChange={handleValoracionMinChange}
-                  onValoracionMaxChange={handleValoracionMaxChange}
-                  offline={offline}
-                />
-              )}
-              <EscaparateProductos 
-                productos={currentProducts} 
-                onAddToCart={handleAddToCart}
-                offline={offline}
-              />
-              <Paginacion 
-                currentPage={currentPage} 
-                totalPages={totalPages} 
-                onPageChange={handlePageChange}
-                currentCount={currentProducts.length}
-                totalCount={productosFiltrados.length}
-              />
-            </div>
-          </>
-        );
+        return <EscaparateProductos productos={productosFiltrados} />;
     }
   };
 
   return (
-    <div className="App">
-      <Cabecera />
-      <MenuNavegacion 
-        onOpenCart={openCart}
-        seccionActual={seccionActual}
-        setSeccionActual={setSeccionActual}
-        user={user}
+    <div className="d-flex flex-column min-vh-100">
+      <Cabecera 
+        setQuery={setQuery} 
+        query={query} 
+        toggleAjustes={toggleAjustes} 
+        seccionActual={seccionActual} 
+        setSeccionActual={setSeccionActual} 
+        user={currentUser} 
       />
-      
-      <main className="container-fluid">
+      <main className="container-fluid flex-grow-1">
         <div className="row">
-          <PanelAutenticacion offline={offline} />
-          {renderContenidoPrincipal()}
+          <div className="col-md-8 p-3">
+            {renderizarSeccion()}
+          </div>
+          <aside className="col-md-4 p-3 border-start">
+            <PanelAutenticacion offline={offline}/>
+          </aside>
         </div>
       </main>
-
-      <Carrito 
-        cartItems={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onCloseCart={closeCart}
-      />
-      
       <Pie />
     </div>
   );
@@ -375,6 +333,14 @@ function App() {
       <AppContent />
     </AuthProvider>
   );
+}
+
+function AdminRoute({ children }) {
+  const { currentUser } = useContext(AuthContext);
+  if (!currentUser || currentUser.rol !== 'admin') {
+    return <Navigate to="/" />;
+  }
+  return children;
 }
 
 export default App;
