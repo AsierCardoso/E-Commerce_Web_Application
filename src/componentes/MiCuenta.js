@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 const MiCuenta = ({ offline }) => {
-  const { currentUser, updateProfile } = useContext(AuthContext);
+  const { user, updateProfile } = useAuth();
   const [formData, setFormData] = useState({
     nombre: '',
     telefono: '',
@@ -14,15 +13,15 @@ const MiCuenta = ({ offline }) => {
   const [message, setMessage] = useState({ text: '', type: '' });
 
   useEffect(() => {
-    if (currentUser) {
+    if (user) {
       setFormData({
-        nombre: currentUser.nombre || '',
-        telefono: currentUser.telefono || '',
-        direccion: currentUser.direccion || '',
-        fechaNacimiento: currentUser.fechaNacimiento ? currentUser.fechaNacimiento.split('T')[0] : ''
+        nombre: user.nombre || '',
+        telefono: user.telefono || '',
+        direccion: user.direccion || '',
+        fechaNacimiento: user.fechaNacimiento ? user.fechaNacimiento.split('T')[0] : ''
       });
     }
-  }, [currentUser]);
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,14 +44,14 @@ const MiCuenta = ({ offline }) => {
       setMessage({ text: 'Perfil actualizado correctamente', type: 'success' });
       setTimeout(() => setMessage({ text: '', type: '' }), 3000);
     } else {
-      setMessage({ text: result.error || 'Error al actualizar', type: 'error' });
+      setMessage({ text: result.error, type: 'error' });
       setTimeout(() => setMessage({ text: '', type: '' }), 5000);
     }
     
     setLoading(false);
   };
 
-  if (!currentUser) {
+  if (!user) {
     return (
       <div className="col-md-8 p-3">
         <div className="alert alert-warning">
@@ -85,14 +84,15 @@ const MiCuenta = ({ offline }) => {
               </div>
               
               <div className="col-md-6 mb-3">
-                <label htmlFor="email" className="form-label">Email (no se puede cambiar)</label>
+                <label htmlFor="email" className="form-label">Email</label>
                 <input 
                   type="email" 
                   className="form-control" 
                   id="email" 
-                  value={currentUser.email}
+                  value={user.email}
                   disabled
                 />
+                <small className="text-muted">El email no se puede modificar</small>
               </div>
             </div>
 
@@ -137,16 +137,16 @@ const MiCuenta = ({ offline }) => {
               ></textarea>
             </div>
 
-            {currentUser.rol === 'admin' && (
+            {user.rol === 'admin' && (
               <div className="mb-3">
-                <label htmlFor="rol" className="form-label">Rol</label>
+                <label className="form-label">Rol</label>
                 <input 
                   type="text" 
                   className="form-control" 
-                  id="rol" 
-                  value={currentUser.rol} 
-                  disabled 
+                  value="Administrador"
+                  disabled
                 />
+                <small className="text-muted">El rol no se puede modificar</small>
               </div>
             )}
 

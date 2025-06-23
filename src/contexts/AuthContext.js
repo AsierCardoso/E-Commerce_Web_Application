@@ -1,41 +1,36 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 
-export const AuthContext = createContext(null);
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [visitas, setVisitas] = useState(0);
 
-  const checkAuthStatus = useCallback(async () => {
+  const checkAuthStatus = async () => {
     try {
-      const response = await fetch('http://34.69.136.113/api/usuarios/check-auth', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch('http://localhost:4000/api/usuarios/check-auth', {
         credentials: 'include'
       });
       if (response.ok) {
         const data = await response.json();
-        setCurrentUser(data.user);
+        setUser(data.usuario);
+        setVisitas(data.visitas || 0);
       } else {
-        setCurrentUser(null);
+        setUser(null);
+        setVisitas(0);
       }
     } catch (error) {
-      console.error("Error checking auth status:", error);
-      setCurrentUser(null);
+      setUser(null);
+      setVisitas(0);
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, [checkAuthStatus]);
+  };
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('http://34.69.136.113/api/usuarios/login', {
+      const response = await fetch('http://localhost:4000/api/usuarios/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -43,13 +38,14 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password }),
         credentials: 'include'
       });
-
-      const data = await response.json();
       if (response.ok) {
-        setCurrentUser(data.user);
-        return { success: true, user: data.user };
+        const data = await response.json();
+        setUser(data.usuario);
+        setVisitas(data.visitas || 1);
+        return { success: true };
       } else {
-        return { success: false, error: data.error || 'Error en el login' };
+        const errorData = await response.json();
+        return { success: false, error: errorData.error };
       }
     } catch (error) {
       return { success: false, error: 'Error de conexión' };
@@ -58,27 +54,31 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await fetch('http://34.69.136.113/api/usuarios/register', {
+      const response = await fetch('http://localhost:4000/api/usuarios/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(userData)
+        body: JSON.stringify(userData),
+        credentials: 'include'
       });
-      const data = await response.json();
       if (response.ok) {
+        const data = await response.json();
+        setUser(data.usuario);
+        setVisitas(data.visitas || 1);
         return { success: true };
       } else {
-        return { success: false, error: data.error || 'Error en el registro' };
+        const errorData = await response.json();
+        return { success: false, error: errorData.error };
       }
     } catch (error) {
       return { success: false, error: 'Error de conexión' };
     }
   };
-  
+
   const updateProfile = async (userData) => {
     try {
-      const response = await fetch('http://34.69.136.113/api/usuarios/perfil', {
+      const response = await fetch('http://localhost:4000/api/usuarios/perfil', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -86,13 +86,14 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify(userData),
         credentials: 'include'
       });
-
-      const data = await response.json();
       if (response.ok) {
-        setCurrentUser(data.user);
-        return { success: true, user: data.user };
+        const data = await response.json();
+        setUser(data.usuario);
+        setVisitas(data.visitas || visitas);
+        return { success: true };
       } else {
-        return { success: false, error: data.error };
+        const errorData = await response.json();
+        return { success: false, error: errorData.error };
       }
     } catch (error) {
       return { success: false, error: 'Error de conexión' };
@@ -101,30 +102,44 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('http://34.69.136.113/api/usuarios/logout', {
+      await fetch('http://localhost:4000/api/usuarios/logout', {
         method: 'POST',
         credentials: 'include'
       });
-    } catch (error) {
-      // No hacer nada, simplemente desloguear en el frontend
-    } finally {
-      setCurrentUser(null);
+    } catch (error) {}
+    finally {
+      setUser(null);
+      setVisitas(0);
     }
   };
 
-  const value = {
-    currentUser,
-    loading,
-    login,
-    logout,
-    register,
-    updateProfile,
-    checkAuthStatus
-  };
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
 
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
+    <AuthContext.Provider value={{
+      user,
+      setUser,
+      loading,
+      setLoading,
+      visitas,
+      setVisitas,
+      checkAuthStatus,
+      login,
+      register,
+      updateProfile,
+      logout
+    }}>
+      {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+  }
+  return context;
 };

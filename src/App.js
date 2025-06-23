@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './css/styles.css';
 import Cabecera from './componentes/Cabecera';
 import MenuNavegacion from './componentes/MenuNavegacion';
@@ -13,19 +13,16 @@ import Carrito from './componentes/Carrito';
 import FiltrosAjustes from './componentes/FiltrosAjustes';
 import PanelAutenticacion from './componentes/PanelAutenticacion';
 import MiCuenta from './componentes/MiCuenta';
-import { AuthProvider, AuthContext } from './contexts/AuthContext';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
-import LoginForm from './componentes/LoginForm';
-import RegisterForm from './componentes/RegisterForm';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 /*
   Componente: AppContent
   Descripción: Contenido principal de la aplicación con autenticación
 */
 function AppContent() {
-  const { currentUser } = useContext(AuthContext);
+  const { user } = useAuth();
   
-  // Estado online/offline: Define si la aplicación está en modo offline según la conexión del navegador.
+   // Estado online/offline: Define si la aplicación está en modo offline según la conexión del navegador.
   const [offline, setOffline] = useState(!navigator.onLine);
   
   // Estados globales
@@ -35,7 +32,7 @@ function AppContent() {
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [mostrarAjustes, setMostrarAjustes] = useState(false);
-  const [seccionActual, setSeccionActual] = useState('escaparate');
+  const [seccionActual, setSeccionActual] = useState('productos'); // 'productos', 'mi-cuenta', 'añadir-producto'
 
   // Calcular el precio máximo de los productos, de 1000 si no hay productos.
   const computedMaxPrice = productos.length > 0 ? Math.max(...productos.map(p => p.precio)) : 1000;
@@ -48,7 +45,7 @@ function AppContent() {
 
   // Ref para el precio máximo
   const precioMaxRef = useRef(computedMaxPrice);
-
+  
   /*
     useEffect: Configura los event listeners para detectar cambios en la conexión.
   */
@@ -69,7 +66,7 @@ function AppContent() {
   useEffect(() => {
     const cargarProductos = async () => {
       try {
-        const response = await fetch('http://34.69.136.113/api/productos');
+        const response = await fetch('http://localhost:4000/api/productos');
         if (response.ok) {
           const data = await response.json();
           setProductos(data);
@@ -94,7 +91,7 @@ function AppContent() {
     precioMaxRef.current = computedMaxPrice;
   }, [computedMaxPrice, precioMax]);
 
-  /*
+    /*
     useEffect: Filtrado de productos según query, rango de precio y valoración.
   */
   useEffect(() => {
@@ -172,7 +169,7 @@ function AppContent() {
 
   const handleAddProduct = async (newProduct) => {
     try {
-      const response = await fetch('http://34.69.136.113/api/productos', {
+      const response = await fetch('http://localhost:4000/api/productos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -183,7 +180,7 @@ function AppContent() {
       if (response.ok) {
         const productoGuardado = await response.json();
         setProductos(prev => [...prev, productoGuardado]);
-        setSeccionActual('escaparate'); // Volver a la vista de escaparate
+        setSeccionActual('productos'); // Volver a la vista de productos
       }
     } catch (error) {
       console.error('Error añadiendo producto:', error);
@@ -192,7 +189,7 @@ function AppContent() {
 
   const handleUpdateProduct = async (updatedProduct) => {
     try {
-      const response = await fetch(`http://34.69.136.113/api/productos/${updatedProduct._id}`, {
+      const response = await fetch(`http://localhost:4000/api/productos/${updatedProduct._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -215,7 +212,7 @@ function AppContent() {
 
   const handleDeleteProduct = async (productId) => {
     try {
-      const response = await fetch(`http://34.69.136.113/api/productos/${productId}`, {
+      const response = await fetch(`http://localhost:4000/api/productos/${productId}`, {
         method: 'DELETE'
       });
 
@@ -270,20 +267,22 @@ function AppContent() {
   };
 
   // Renderizar contenido según la sección actual
-  const renderizarSeccion = () => {
+  const renderContenidoPrincipal = () => {
     switch (seccionActual) {
-      case 'escaparate':
-        return <EscaparateProductos productos={productosFiltrados} />;
       case 'mi-cuenta':
         return <MiCuenta offline={offline} />;
       case 'añadir-producto':
-        return currentUser?.rol === 'admin' ? (
+        return user?.rol === 'admin' ? (
           <FormularioNuevosProductos onAddProduct={handleAddProduct} offline={offline} />
         ) : (
-          <p>Acceso denegado. Debes ser administrador.</p>
+          <div className="col-md-8 p-3">
+            <div className="alert alert-warning">
+              Solo los administradores pueden añadir productos.
+            </div>
+          </div>
         );
       case 'editar-productos':
-        return currentUser?.rol === 'admin' ? (
+        return user?.rol === 'admin' ? (
           <GestionProductos 
             offline={offline} 
             onUpdateProduct={handleUpdateProduct}
@@ -291,33 +290,76 @@ function AppContent() {
             productos={productos}
           />
         ) : (
-          <p>Acceso denegado. Debes ser administrador.</p>
+          <div className="col-md-8 p-3">
+            <div className="alert alert-warning">
+              Solo los administradores pueden gestionar productos.
+            </div>
+          </div>
         );
       default:
-        return <EscaparateProductos productos={productosFiltrados} />;
+        return (
+          <>
+            <div className="col-md-8 p-3">
+              <BuscadorProductos 
+                query={query} 
+                setQuery={setQuery} 
+                toggleAjustes={toggleAjustes}
+                offline={offline}
+              />
+            {mostrarAjustes && (
+              <FiltrosAjustes 
+                precioMin={precioMin}
+                precioMax={precioMax}
+                  valoracionMin={valoracionMin}
+                  valoracionMax={valoracionMax}
+                onPrecioMinChange={handlePrecioMinChange}
+                onPrecioMaxChange={handlePrecioMaxChange}
+                onValoracionMinChange={handleValoracionMinChange}
+                onValoracionMaxChange={handleValoracionMaxChange}
+                  offline={offline}
+              />
+            )}
+              <EscaparateProductos 
+                productos={currentProducts} 
+                onAddToCart={handleAddToCart} 
+                offline={offline}
+              />
+              <Paginacion 
+                currentPage={currentPage} 
+                totalPages={totalPages} 
+                onPageChange={handlePageChange}
+                currentCount={currentProducts.length}
+                totalCount={productosFiltrados.length}
+              />
+            </div>
+          </>
+        );
     }
   };
 
   return (
-    <div className="d-flex flex-column min-vh-100">
-      <Cabecera 
-        setQuery={setQuery} 
-        query={query} 
-        toggleAjustes={toggleAjustes} 
-        seccionActual={seccionActual} 
-        setSeccionActual={setSeccionActual} 
-        user={currentUser} 
+    <div className="App">
+      <Cabecera />
+      <MenuNavegacion 
+        onOpenCart={openCart}
+        seccionActual={seccionActual}
+        setSeccionActual={setSeccionActual}
+        user={user}
       />
-      <main className="container-fluid flex-grow-1">
+      
+      <main className="container-fluid">
         <div className="row">
-          <div className="col-md-8 p-3">
-            {renderizarSeccion()}
-          </div>
-          <aside className="col-md-4 p-3 border-start">
-            <PanelAutenticacion offline={offline}/>
-          </aside>
+          <PanelAutenticacion offline={offline} />
+          {renderContenidoPrincipal()}
         </div>
       </main>
+
+      <Carrito 
+         cartItems={cartItems} 
+         onUpdateQuantity={handleUpdateQuantity} 
+         onCloseCart={closeCart}
+      />
+      
       <Pie />
     </div>
   );
@@ -333,14 +375,6 @@ function App() {
       <AppContent />
     </AuthProvider>
   );
-}
-
-function AdminRoute({ children }) {
-  const { currentUser } = useContext(AuthContext);
-  if (!currentUser || currentUser.rol !== 'admin') {
-    return <Navigate to="/" />;
-  }
-  return children;
 }
 
 export default App;
