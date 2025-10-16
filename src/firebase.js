@@ -6,7 +6,7 @@ import { getAuth } from "firebase/auth"; // ¡Importante! Añade esto para la au
 // La configuración de tu aplicación web de Firebase
 // Asegúrate de que los valores aquí (especialmente la apiKey) son los correctos de tu consola de Firebase.
 const firebaseConfig = {
-  apiKey: "AIzaSyANbhzfR_fnSPDsCViauNTfuX_HSilv000", // <-- USA TU API KEY COMPLETA OBTENIDA DE FIREBASE
+  apiKey: "YOUR APIKEY", // <-- USA TU API KEY COMPLETA OBTENIDA DE FIREBASE
   authDomain: "tiendadawe.firebaseapp.com",
   projectId: "tiendadawe",
   storageBucket: "tiendadawe.appspot.com",
